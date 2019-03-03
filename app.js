@@ -19,9 +19,20 @@ let budgetController = (function() {
             inc: []
         },
         totals: {
-            exp: [],
-            inc: []
-        }
+            exp: 0,
+            inc: 0
+        },
+        budget: 0,
+        percentage: -1  //value -1 so we now it doesnt exist yet
+    };
+
+    //calculates total for either inc or exp
+    const calculateTotal = function(type) {
+        let sum = 0;
+        data.allItems[type].forEach(element => {
+            sum += element.value;
+        });
+        data.totals[type] = sum;
     };
     
     return {
@@ -45,7 +56,31 @@ let budgetController = (function() {
             return newItem;
         },
 
+        calculateBudget: function() {
+            //calc total income and expense
+            calculateTotal("exp");
+            calculateTotal("inc");
+            //calc budget: income - expense
+            data.budget = data.totals.inc - data.totals.exp;
+            //calc the percentage of income we spent
+                if (data.totals.inc > 0) {
+                    data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+                } else {
+                    data.percentage = -1;
+                }
+        },
+        //getter method for budget values. using object because many values
+        getBudget: function() {
+            return {
+                budget: data.budget,
+                totalInc: data.totals.inc,
+                totalExp: data.totals.exp,
+                percentage: data.percentage
+            };
+        },
+
         testing: function() {
+            calculateTotal("exp");
             console.log(data);
         }
     };
@@ -54,14 +89,19 @@ let budgetController = (function() {
 
 
 // UI CONTROLLER
+//all classnames of html. simple to change later on
 let UIController = (function() {
-    let DOMstrings = {
+    const DOMstrings = {
         inputType: ".add__type",
         inputDesc: ".add__description",
         inputValue: ".add__value",
         inputBtn: ".add__btn",
         incomeContainer: ".income__list",
-        expensesContainer: ".expenses__list"
+        expensesContainer: ".expenses__list",
+        budgetLabel: ".budget__value",
+        incomeLabel: ".budget__income--value",
+        expensesLabel: ".budget__expenses--value",
+        percentageLabel: ".budget__expenses--percentage",
     };
     
     return {
@@ -107,6 +147,17 @@ let UIController = (function() {
             //Sets focus back on description field
             fieldsArr[0].focus();
         },
+        // to display the calculated budget items. gets obj with 4 properties
+        displaybudget: function(obj) {
+            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
+            document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
+            document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp;
+            if (obj.percentage > 0) {
+                document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
+            } else {
+                document.querySelector(DOMstrings.percentageLabel).textContent = "---";
+            }
+        },
 
         //making DOMstrings public
         getDOMstrings: function() {
@@ -119,11 +170,11 @@ let UIController = (function() {
 
 // GLOBAL APP CONTROLLER
 let controller = (function(budgetCtrl, UICtrl) {
-    let setupEventListeners = function() {
-        let DOM = UIController.getDOMstrings();
+    //function having all the eventListeners running waiting for User input
+    const setupEventListeners = function() {
+        const DOM = UIController.getDOMstrings();
         //for button click on adding budget elements
         document.querySelector(DOM.inputBtn).addEventListener("click", ctrlAddItem);
-        
         //event listener for return key. called on document object (whole page)
         document.addEventListener("keypress", function(event) {
             if (event.keyCode === 13 || event.which === 13) {
@@ -134,13 +185,13 @@ let controller = (function(budgetCtrl, UICtrl) {
 
     // Function to-calc the budget
     // seperate function because we call it on add and delete
-    let updateBudget = function() {
+    const updateBudget = function() {
         //1. Calc budget
-            
-        //2. Return budget
-        
+        budgetController.calculateBudget(); 
+        //2. Return budget - getter method
+        let budget = budgetController.getBudget();
         //3. Display on ui
-        
+        UIController.displaybudget(budget);
     };
     
     // What happens when new budget element gets added
@@ -170,6 +221,13 @@ let controller = (function(budgetCtrl, UICtrl) {
             init: function() {
                 console.log("App started!");
                 setupEventListeners();
+                //make everything zero on start. inserting custom obj
+                UIController.displaybudget({
+                    budget: 0,
+                    totalInc: 0,
+                    totalExp: 0,
+                    percentage: -1
+                });
             }
         };
     })(budgetController, UIController);
