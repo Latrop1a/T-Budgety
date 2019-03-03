@@ -1,11 +1,26 @@
 // BUDGET CONTROLLER
 let budgetController = (function() {
+    // Expense Constructor
     let Expense = function(id, description, value) {
         this.id = id;
         this.description = description;
         this.value = value;
+        this.percentage = -1;   //not yet defined
     };
-    
+
+    // Calculate percentage from total Method
+    Expense.prototype.calcPercentage = function(totalIncome) {
+        if (totalIncome > 0) {
+            this.percentage = Math.round((this.value / totalIncome) * 100);
+        } else {
+            this.percentage = -1;
+        }
+    };
+
+    Expense.prototype.getPercentage = function () {
+        return this.percentage;
+    };
+    // Income Contructor
     let Income = function(id, description, value) {
         this.id = id;
         this.description = description;
@@ -87,6 +102,15 @@ let budgetController = (function() {
                     data.percentage = -1;
                 }
         },
+
+        calculatePercentages: function() {
+            
+            data.allItems.exp.forEach(function(cur) {
+                cur.calcPercentage(data.totals.inc);
+            });
+
+        },
+
         //getter method for budget values. using object because many values
         getBudget: function() {
             return {
@@ -95,6 +119,13 @@ let budgetController = (function() {
                 totalExp: data.totals.exp,
                 percentage: data.percentage
             };
+        },
+
+        getPercentages: function() {
+            let allPerc = data.allItems.exp.map(function(cur) {
+                return cur.getPercentage();
+            });
+            return allPerc;
         },
 
         testing: function() {
@@ -107,6 +138,7 @@ let budgetController = (function() {
 
 
 // UI CONTROLLER
+
 //all classnames of html. simple to change later on
 let UIController = (function() {
     const DOMstrings = {
@@ -121,6 +153,7 @@ let UIController = (function() {
         expensesLabel: ".budget__expenses--value",
         percentageLabel: ".budget__expenses--percentage",
         container: ".container",
+        expensesPercLabel: ".item__percentage"
     };
     
     return {
@@ -162,7 +195,7 @@ let UIController = (function() {
             let fields, fieldsArr;
             //querySelectorAll returns list of findings
             fields = document.querySelectorAll(DOMstrings.inputDesc + ", " + DOMstrings.inputValue);
-            //using the splice() from array to covert the list we got from above
+            //using the slice() from array to covert the list we got from above
             fieldsArr = Array.prototype.slice.call(fields);
             //sets value to zero for every ele
             fieldsArr.forEach(function(current, index, array) {
@@ -183,6 +216,30 @@ let UIController = (function() {
             }
         },
 
+        displayPercentages: function(percentages) {
+            // dont know what items exactly -> SelectorAll
+            //returns nodeList
+            let fields = document.querySelectorAll(DOMstrings.expensesPercLabel);
+
+            // Custom function to use forEach on nodeList
+            const nodeListForEach = function(list, callback) {
+                for (let i = 0; i < list.length; i++) {
+                    callback(list[i], i);
+                }
+            };
+            
+            // Custom ForEach gets used with anon callback func
+            nodeListForEach(fields, function(current, index) {
+                // If we have percentage for index we display it via textContent at the html element coming out of fields Nodelist
+                if (percentages[index] > 0) {
+                    current.textContent = percentages[index] + "%";
+                } else {
+                    current.textContent = "---";
+                }
+            });
+            
+        },
+
         //making DOMstrings public
         getDOMstrings: function() {
             return DOMstrings;
@@ -192,7 +249,7 @@ let UIController = (function() {
 
 
 
-// GLOBAL APP CONTROLLER
+// APP CONTROLLER
 let controller = (function(budgetCtrl, UICtrl) {
     //function having all the eventListeners running waiting for User input
     const setupEventListeners = function() {
@@ -209,7 +266,7 @@ let controller = (function(budgetCtrl, UICtrl) {
     };
 
     // Function to-calc the budget
-    // seperate function because we call it on add and delete
+    // seperate function because we call it on add and delete tiems
     const updateBudget = function() {
         //1. Calc budget
         budgetController.calculateBudget(); 
@@ -217,6 +274,16 @@ let controller = (function(budgetCtrl, UICtrl) {
         let budget = budgetController.getBudget();
         //3. Display on ui
         UIController.displaybudget(budget);
+    };
+
+    const updatePercentages = function() {
+        //1. Calc the percentages
+        budgetController.calculatePercentages();
+        //2. Read them form budget Controller
+        let percentages = budgetController.getPercentages();
+        //3. Update UI with new percentages
+        UIController.displayPercentages(percentages);
+        console.log(percentages);
     };
     
     // What happens when new budget element gets added
@@ -239,17 +306,19 @@ let controller = (function(budgetCtrl, UICtrl) {
             UIController.clearFields();
             //calc and update budget
             updateBudget();
+            //calc and update percentages
+            updatePercentages();
         }
     };
     // Delete list items. event is the orginating bubble element
-    //not best solution since we hardcode the DOM path
+    //not best solution since hardcoded the DOM path
     const ctrlDeleteItem = function(event) {
         let itemID, splitID, type, id;
-        //gets the right element with the id string
+        //selects the ItemBox via id. Has to traverse up
         itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
         //only one id in html..on the items
         if (itemID) {
-            //returns array with 2 items(more with more -): before&after "-"
+            //split returns array with 2 strings(more with more -): before&after "-"
             splitID = itemID.split("-");
             type = splitID[0];
             id = parseInt(splitID[1]);
@@ -260,6 +329,8 @@ let controller = (function(budgetCtrl, UICtrl) {
             UIController.deleteListItem(itemID);
             //3. update and show new budget - use method from before
             updateBudget();
+            //4. calc and update percentages
+            updatePercentages();
         }
     };
 
