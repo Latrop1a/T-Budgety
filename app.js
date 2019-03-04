@@ -1,3 +1,20 @@
+/*
+Budget App with ES5 Syntax
+
+Feature Ideas:
+-Delete all (easy)
+-Date picker(medium?)
+-loop to make the thousand marker work with big numbers(easy)
+-add categories and a chart split into the categories (hard)
+-add reset button (easy)
+-add months dropdown with temp storing of months (hard?)
+-edit button on each list element (medium?)
+
+-add users and saving of data via NODE JS (very hard)
+
+
+*/
+
 // BUDGET CONTROLLER
 let budgetController = (function() {
     // Expense Constructor
@@ -153,9 +170,36 @@ let UIController = (function() {
         expensesLabel: ".budget__expenses--value",
         percentageLabel: ".budget__expenses--percentage",
         container: ".container",
-        expensesPercLabel: ".item__percentage"
+        expensesPercLabel: ".item__percentage",
+        dateLabel: ".budget__title--month",
     };
-    
+
+    const formatNumber = function(num, type) {
+        let numSplit, int, dec, sign;
+        /* + or - before number 
+            2 decimal poiiiints
+            comma separating thousand
+        */
+        num = Math.abs(num);
+        num = num.toFixed(2);    //method from num.prototype - converts to string object
+        numSplit = num.split(".");  //converts into 2 parts and stores array
+        int = numSplit[0];
+        dec = numSplit[1];
+        if (int.length > 3) {   //puts the 1000 point
+            int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3);
+        }
+
+        type === "inc" ? sign = "+" : sign = "-";
+
+        return sign + " " + int + "." + dec;
+    };
+
+    // Custom function to use forEach on nodeList
+    const nodeListForEach = function (list, callback) {
+        for (let i = 0; i < list.length; i++) {
+            callback(list[i], i);
+        }
+    };
     return {
         // returns an object with the UI inputs
         getInput: function() {
@@ -181,7 +225,7 @@ let UIController = (function() {
             // Replace placeholder text with actual data
             newHtml = html.replace("%id%", obj.id);
             newHtml = newHtml.replace("%description%", obj.description);
-            newHtml = newHtml.replace("%value%", obj.value);
+            newHtml = newHtml.replace("%value%", formatNumber(obj.value, type));
             // Insert HTML into DOM - beforeend so we have it as last element in list
             document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
         },
@@ -206,9 +250,12 @@ let UIController = (function() {
         },
         // to display the calculated budget items. gets obj with 4 properties
         displaybudget: function(obj) {
-            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
-            document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
-            document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp;
+            let type;
+            obj.budget > 0 ? type = "inc" : type = "exp";   //determine if budget is positive
+
+            document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+            document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, "inc");
+            document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp, "exp");
             if (obj.percentage > 0) {
                 document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
             } else {
@@ -220,15 +267,7 @@ let UIController = (function() {
             // dont know what items exactly -> SelectorAll
             //returns nodeList
             let fields = document.querySelectorAll(DOMstrings.expensesPercLabel);
-
-            // Custom function to use forEach on nodeList
-            const nodeListForEach = function(list, callback) {
-                for (let i = 0; i < list.length; i++) {
-                    callback(list[i], i);
-                }
-            };
-            
-            // Custom ForEach gets used with anon callback func
+            // Custom ForEach() on nodeList gets used with anon callback func
             nodeListForEach(fields, function(current, index) {
                 // If we have percentage for index we display it via textContent at the html element coming out of fields Nodelist
                 if (percentages[index] > 0) {
@@ -237,7 +276,30 @@ let UIController = (function() {
                     current.textContent = "---";
                 }
             });
+        },
+
+        displayMonth: function() {
+            let now, year, month, monthNames;
+            now = new Date();
+            monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
+            month = now.getMonth();
+            year = now.getFullYear();
+            document.querySelector(DOMstrings.dateLabel).textContent = monthNames[month]+ " " + year;
+        },
+
+        //make the outlines red when expense is selected
+        changedType: function() {
+            var fields = document.querySelectorAll(
+                DOMstrings.inputType + "," + 
+                DOMstrings.inputDesc + "," + 
+                DOMstrings.inputValue);
             
+            //use our custom forEach nodelist
+            nodeListForEach(fields, function(cur) {
+                cur.classList.toggle("red-focus");
+            });
+
+            document.querySelector(DOMstrings.inputBtn).classList.toggle("red");
         },
 
         //making DOMstrings public
@@ -261,7 +323,10 @@ let controller = (function(budgetCtrl, UICtrl) {
             if (event.keyCode === 13 || event.which === 13) {
                 ctrlAddItem();
             }
+        //bubbles up
         document.querySelector(DOM.container).addEventListener("click", ctrlDeleteItem);
+        //event for change of type -> red outline on expenses
+        document.querySelector(DOM.inputType).addEventListener("change", UIController.changedType);
         });
     };
 
@@ -337,6 +402,7 @@ let controller = (function(budgetCtrl, UICtrl) {
     return {
         init: function() {
             console.log("App started!");
+            UIController.displayMonth();
             setupEventListeners();
             //make everything zero on start. inserting custom obj
             UIController.displaybudget({
