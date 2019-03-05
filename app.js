@@ -2,7 +2,7 @@
 Budget App with ES5 Syntax
 
 Feature Ideas:
--Delete all (easy)
+-Delete all (done)
 -Date picker(medium?)
 -loop to make the thousand marker work with big numbers(easy)
 -add categories and a chart split into the categories (hard)
@@ -25,7 +25,7 @@ let budgetController = (function() {
         this.percentage = -1;   //not yet defined
     };
 
-    // Calculate percentage from total Method
+    // Method: Calculate percentage from total
     Expense.prototype.calcPercentage = function(totalIncome) {
         if (totalIncome > 0) {
             this.percentage = Math.round((this.value / totalIncome) * 100);
@@ -92,7 +92,7 @@ let budgetController = (function() {
         deleteItem: function(type, id) {
             let ids, index;
             //need to consider that id != index
-            //map returns a new array
+            //map like forEach but returns a new array
             ids = data.allItems[type].map(function(current) {
                 return current.id;
             });
@@ -103,7 +103,11 @@ let budgetController = (function() {
                 //splice removes elements from our array at position index
                 data.allItems[type].splice(index, 1);
             }
+        },
 
+        deleteType: function(type) {
+            //deletes all data of type
+            data.allItems[type] = [];
         },
 
         calculateBudget: function() {
@@ -163,6 +167,8 @@ let UIController = (function() {
         inputDesc: ".add__description",
         inputValue: ".add__value",
         inputBtn: ".add__btn",
+        inputBtnDelInc: ".allInc__delete--btn",
+        inputBtnDelExp: ".allExp__delete--btn",
         incomeContainer: ".income__list",
         expensesContainer: ".expenses__list",
         budgetLabel: ".budget__value",
@@ -233,6 +239,17 @@ let UIController = (function() {
         deleteListItem: function(selectorID) {
             let el = document.getElementById(selectorID);
             el.parentNode.removeChild(el);
+        },
+
+        deleteList: function(type) {
+            let typeContainer, ele;
+            //chooses the right list
+            type === "inc" ? typeContainer = DOMstrings.incomeContainer : typeContainer = DOMstrings.expensesContainer;
+            //removes children until none
+            ele = document.querySelector(typeContainer)
+            while (ele.firstChild) {
+               ele.removeChild(ele.firstChild);
+            }
         },
 
         clearFields: function() {
@@ -327,6 +344,9 @@ let controller = (function(budgetCtrl, UICtrl) {
         document.querySelector(DOM.container).addEventListener("click", ctrlDeleteItem);
         //event for change of type -> red outline on expenses
         document.querySelector(DOM.inputType).addEventListener("change", UIController.changedType);
+        //event for delete Incomes / Expenses
+        document.querySelector(DOM.inputBtnDelInc).addEventListener("click", ctrlDeleteAll);
+        document.querySelector(DOM.inputBtnDelExp).addEventListener("click", ctrlDeleteAll);
         });
     };
 
@@ -398,6 +418,20 @@ let controller = (function(budgetCtrl, UICtrl) {
             updatePercentages();
         }
     };
+
+    //Deletes all items entered
+    const ctrlDeleteAll = function(event) {
+        let type;
+        console.log(event.target.parentNode.classList);
+        if (event.target.parentNode.classList.value === "allInc__delete--btn") { type = "inc"; }
+        else if (event.target.parentNode.classList.value === "allExp__delete--btn") { type = "exp"; }
+        // 1. Delete all objects from budgetCtrl
+        budgetController.deleteType(type);
+        // 2. Remove items from UI
+        UIController.deleteList(type);
+        // 3. Rerun budget calc
+        updateBudget();
+    }
 
     return {
         init: function() {

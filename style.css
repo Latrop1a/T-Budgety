@@ -265,6 +265,34 @@ h2 {
 .item:hover .item__value { transform: translateX(-20px); }
 .item:hover .item__percentage { transform: translateX(-20px); }
 
+.allInc__delete {
+    color: #28B9B5;
+}
+
+.allInc__delete--btn {
+    font-size: 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.item:hover allInc__delete--btn {outline-color: #28B9B5}
+
+.allExp__delete--btn {
+    font-size: 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.item:hover allExp__delete--btn {outline-color: #28B9B5}
+
 
 .unpaid {
     background-color: #FFDAD9 !important;
