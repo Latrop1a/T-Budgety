@@ -345,8 +345,8 @@ let controller = (function(budgetCtrl, UICtrl) {
         //event for change of type -> red outline on expenses
         document.querySelector(DOM.inputType).addEventListener("change", UIController.changedType);
         //event for delete Incomes / Expenses
-        document.querySelector(DOM.inputBtnDelInc).addEventListener("click", ctrlDeleteAll);
-        document.querySelector(DOM.inputBtnDelExp).addEventListener("click", ctrlDeleteAll);
+        document.querySelector(DOM.inputBtnDelInc).addEventListener("click", deleteListType);
+        document.querySelector(DOM.inputBtnDelExp).addEventListener("click", deleteListType);
         });
     };
 
@@ -419,8 +419,8 @@ let controller = (function(budgetCtrl, UICtrl) {
         }
     };
 
-    //Deletes all items entered
-    const ctrlDeleteAll = function(event) {
+    //Deletes whole list of type
+    const deleteListType = function(event) {
         let type;
         console.log(event.target.parentNode.classList);
         if (event.target.parentNode.classList.value === "allInc__delete--btn") { type = "inc"; }
@@ -429,8 +429,9 @@ let controller = (function(budgetCtrl, UICtrl) {
         budgetController.deleteType(type);
         // 2. Remove items from UI
         UIController.deleteList(type);
-        // 3. Rerun budget calc
+        // 3. Rerun budget calc perc calc
         updateBudget();
+        updatePercentages();
     }
 
     return {
