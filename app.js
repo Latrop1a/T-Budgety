@@ -6,7 +6,6 @@ Feature Ideas:
 -Date picker(medium?)
 -loop to make the thousand marker work with big numbers(easy)
 -add categories and a chart split into the categories (hard)
--add reset button (easy)
 -add months dropdown with temp storing of months (hard?)
 -edit button on each list element (medium?)
 
@@ -181,7 +180,7 @@ let UIController = (function() {
     };
 
     const formatNumber = function(num, type) {
-        let numSplit, int, dec, sign;
+        let numSplit, int, newInt, dec, sign;
         /* + or - before number 
             2 decimal poiiiints
             comma separating thousand
@@ -191,13 +190,27 @@ let UIController = (function() {
         numSplit = num.split(".");  //converts into 2 parts and stores array
         int = numSplit[0];
         dec = numSplit[1];
-        if (int.length > 3) {   //puts the 1000 point
-            int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3);
+        newInt = int.substr(int.length-1, 1);
+
+        //puts the 1000 point
+        if (int.length > 0) {
+            let counter = 0;
+
+            for (let i = int.length-2; i >= 0; i--) {
+                if (counter % 3 === 0) {
+                    newInt = "," + int.substr(i, 1) + newInt;
+                } else {
+                    newInt = int.substr(i, 1) + newInt;
+                }
+                counter++;
+            }
+            //Old solution
+            //int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3);
         }
 
         type === "inc" ? sign = "+" : sign = "-";
 
-        return sign + " " + int + "." + dec;
+        return sign + " " + newInt + "." + dec;
     };
 
     // Custom function to use forEach on nodeList
@@ -207,6 +220,7 @@ let UIController = (function() {
         }
     };
     return {
+
         // returns an object with the UI inputs
         getInput: function() {
             return {
@@ -345,8 +359,8 @@ let controller = (function(budgetCtrl, UICtrl) {
         //event for change of type -> red outline on expenses
         document.querySelector(DOM.inputType).addEventListener("change", UIController.changedType);
         //event for delete Incomes / Expenses
-        document.querySelector(DOM.inputBtnDelInc).addEventListener("click", deleteListType);
-        document.querySelector(DOM.inputBtnDelExp).addEventListener("click", deleteListType);
+        document.querySelector(DOM.inputBtnDelInc).addEventListener("click", ctrlDeleteListType);
+        document.querySelector(DOM.inputBtnDelExp).addEventListener("click", ctrlDeleteListType);
         });
     };
 
@@ -409,7 +423,6 @@ let controller = (function(budgetCtrl, UICtrl) {
             id = parseInt(splitID[1]);
             //1. delete item from data structure
             budgetController.deleteItem(type, id);
-
             //2. delete item from UI
             UIController.deleteListItem(itemID);
             //3. update and show new budget - use method from before
@@ -420,7 +433,7 @@ let controller = (function(budgetCtrl, UICtrl) {
     };
 
     //Deletes whole list of type
-    const deleteListType = function(event) {
+    const ctrlDeleteListType = function(event) {
         let type;
         console.log(event.target.parentNode.classList);
         if (event.target.parentNode.classList.value === "allInc__delete--btn") { type = "inc"; }
