@@ -180,7 +180,7 @@ let UIController = (function() {
     };
 
     const formatNumber = function(num, type) {
-        let numSplit, int, newInt, dec, sign;
+        let numSplit, int, newInt, dec, sign, counter;
         /* + or - before number 
             2 decimal poiiiints
             comma separating thousand
@@ -193,21 +193,18 @@ let UIController = (function() {
         newInt = int.substr(int.length-1, 1);
 
         //puts the 1000 point
-        if (int.length > 0) {
-            let counter = 0;
-
-            for (let i = int.length-2; i >= 0; i--) {
-                if (counter % 3 === 0) {
-                    newInt = "," + int.substr(i, 1) + newInt;
-                } else {
-                    newInt = int.substr(i, 1) + newInt;
-                }
-                counter++;
+        counter = 1;
+        for (let i = int.length-2; i >= 0; i--) {
+            if (counter % 3 === 0) {
+                newInt = int.substr(i, 1) + "," + newInt;
+            } else {
+                newInt = int.substr(i, 1) + newInt;
             }
-            //Old solution
-            //int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3);
+            counter++;
         }
-
+        //Old solution
+        //int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3);
+        
         type === "inc" ? sign = "+" : sign = "-";
 
         return sign + " " + newInt + "." + dec;
