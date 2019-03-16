@@ -3,8 +3,9 @@ Budget App with ES5 Syntax
 
 Feature Ideas:
 -Delete all (done)
+-loop to make the thousand marker work with big numbers(done)
+
 -Date picker(medium?)
--loop to make the thousand marker work with big numbers(easy)
 -add categories and a chart split into the categories (hard)
 -add months dropdown with temp storing of months (hard?)
 -edit button on each list element (medium?)
@@ -65,6 +66,19 @@ let budgetController = (function() {
         });
         data.totals[type] = sum;
     };
+
+    //gets Index of Item
+    const getIndex = function(type, id) {
+        
+        let ids, index;
+        //need to consider that id != index
+        //map like forEach but returns a new array
+        ids = data.allItems[type].map(function (current) {
+            return current.id;
+        });
+        //returns the index of the id we are looking for
+        return ids.indexOf(id);
+    };
     
     return {
         //add an item with the info coming from getter method out of UI
@@ -87,16 +101,22 @@ let budgetController = (function() {
             return newItem;
         },
 
+        //edits the data of an item
+        editItem: function(type, id) {
+            let index;
+            //returns the index of the id we are looking for
+            index = getIndex(type, id);
+
+
+            
+
+        },
+
         //delete item from data object
         deleteItem: function(type, id) {
-            let ids, index;
-            //need to consider that id != index
-            //map like forEach but returns a new array
-            ids = data.allItems[type].map(function(current) {
-                return current.id;
-            });
+            let index;
             //returns the index of the id we are looking for
-            index = ids.indexOf(id);
+            index = getIndex(type, id);
 
             if (index !== -1) {
                 //splice removes elements from our array at position index
@@ -168,6 +188,8 @@ let UIController = (function() {
         inputBtn: ".add__btn",
         inputBtnDelInc: ".allInc__delete--btn",
         inputBtnDelExp: ".allExp__delete--btn",
+        inputBtnEditInc: ".editInc__item--btn",
+        inputBtnEditExp: ".editExp__item--btn",
         incomeContainer: ".income__list",
         expensesContainer: ".expenses__list",
         budgetLabel: ".budget__value",
@@ -220,6 +242,15 @@ let UIController = (function() {
 
         // returns an object with the UI inputs
         getInput: function() {
+            return {
+                type: document.querySelector(DOMstrings.inputType).value, //either inc or exp
+                description: document.querySelector(DOMstrings.inputDesc).value,
+                value: parseFloat(document.querySelector(DOMstrings.inputValue).value),
+            };
+        },
+
+        // returns an object with the new inputs - - maybe from pop up box?
+        getEditInput: function() {
             return {
                 type: document.querySelector(DOMstrings.inputType).value, //either inc or exp
                 description: document.querySelector(DOMstrings.inputDesc).value,
@@ -341,6 +372,7 @@ let UIController = (function() {
 
 // APP CONTROLLER
 let controller = (function(budgetCtrl, UICtrl) {
+
     //function having all the eventListeners running waiting for User input
     const setupEventListeners = function() {
         const DOM = UIController.getDOMstrings();
@@ -391,6 +423,7 @@ let controller = (function(budgetCtrl, UICtrl) {
         // Check for correct input
         if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
             //2. Add item to the budget controller
+            //   getting the created object back from .addItem()
             newItem = budgetController.addItem(
                 input.type,
                 input.description,
@@ -406,6 +439,32 @@ let controller = (function(budgetCtrl, UICtrl) {
             updatePercentages();
         }
     };
+
+    const ctrlEditItem = function() {
+        let itemID, splitID, type, id;
+        //get input --- make item input field pop off?? somewehre else?
+        input = UIController.getEditInput();
+        //select the ItemBox
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+        if (itemID) {
+            //split returns array with 2 strings(more with more -): before&after "-"
+            splitID = itemID.split("-");
+            type = splitID[0];
+            id = parseInt(splitID[1]);
+            //1. edit item in data structure
+            budgetController.editItem(type, id, input);
+            //2. delete item from UI
+            UIController.editListItem(itemID);
+            //3. update and show new budget - use method from before
+            updateBudget();
+            //4. calc and update percentages
+            updatePercentages();
+        }
+
+    };
+
+
+
     // Delete list items. event is the orginating bubble element
     //not best solution since hardcoded the DOM path
     const ctrlDeleteItem = function(event) {
@@ -433,8 +492,12 @@ let controller = (function(budgetCtrl, UICtrl) {
     const ctrlDeleteListType = function(event) {
         let type;
         console.log(event.target.parentNode.classList);
-        if (event.target.parentNode.classList.value === "allInc__delete--btn") { type = "inc"; }
-        else if (event.target.parentNode.classList.value === "allExp__delete--btn") { type = "exp"; }
+        if (event.target.parentNode.classList.value === "allInc__delete--btn") { 
+            type = "inc";
+        }
+        else if (event.target.parentNode.classList.value === "allExp__delete--btn") { 
+            type = "exp";
+        }
         // 1. Delete all objects from budgetCtrl
         budgetController.deleteType(type);
         // 2. Remove items from UI
@@ -442,7 +505,7 @@ let controller = (function(budgetCtrl, UICtrl) {
         // 3. Rerun budget calc perc calc
         updateBudget();
         updatePercentages();
-    }
+    };
 
     return {
         init: function() {
