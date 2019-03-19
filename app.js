@@ -73,7 +73,7 @@ let budgetController = (function() {
         let ids, index;
         //need to consider that id != index
         //map like forEach but returns a new array
-        ids = data.allItems[type].map(function (current) {
+        ids = data.allItems[type].map(current => {
             return current.id;
         });
         //returns the index of the id we are looking for
@@ -86,7 +86,7 @@ let budgetController = (function() {
             let newItem, ID;
             //Create new ID
             if (data.allItems[type].length > 0) {
-                ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+                ID = data.allItems[type][data.allItems[type].length - 1].id + 1; //set id to last item id +1
             } else {
                 ID = 0;
             }
