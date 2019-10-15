@@ -2,6 +2,7 @@
 Budget App with ES5 Syntax
 
 Feature Ideas:
+-update into proper es6 and modules (medium)
 -Delete all (done)
 -loop to make the thousand marker work with big numbers(done)
 
@@ -179,8 +180,8 @@ let budgetController = (function() {
 
 // UI CONTROLLER
 
-//all classnames of html. simple to change later on
 let UIController = (function() {
+    //all classnames of html. simple to change later on
     const DOMstrings = {
         inputType: ".add__type",
         inputDesc: ".add__description",
