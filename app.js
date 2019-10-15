@@ -25,7 +25,7 @@ let budgetController = (function() {
         this.value = value;
         this.percentage = -1;   //not yet defined
     };
-
+ 
     // Method: Calculate percentage from total
     Expense.prototype.calcPercentage = function(totalIncome) {
         if (totalIncome > 0) {
@@ -68,6 +68,18 @@ let budgetController = (function() {
         data.totals[type] = sum;
     };
 
+    // gets new ID for addItem()
+    const getNewID = (type) => {
+        //select right array according to type
+        let array = data.allItems[type];
+        //check if any items before
+        if (array.length > 0) {
+            return array[array.length - 1].id + 1;
+        } else {
+            return 0;
+        }
+    };
+
     //gets Index of Item
     const getIndex = function(type, id) {
         
@@ -84,18 +96,14 @@ let budgetController = (function() {
     return {
         //add an item with the info coming from getter method out of UI
         addItem: function(type, des, val) {
-            let newItem, ID;
-            //Create new ID
-            if (data.allItems[type].length > 0) {
-                ID = data.allItems[type][data.allItems[type].length - 1].id + 1; //set id to last item id +1
-            } else {
-                ID = 0;
-            }
+            let newItem, id;
+            //Create new id
+            id = getNewID(type);
             //Create new Item based on inc or exp type
             if (type === "exp") {
-                newItem = new Expense(ID, des, val);
+                newItem = new Expense(id, des, val);
             } else if (type === "inc") {
-                newItem = new Income(ID, des, val);
+                newItem = new Income(id, des, val);
             }
             //Push into data structure
             data.allItems[type].push(newItem);
@@ -260,23 +268,23 @@ let UIController = (function() {
         },
 
         addListItem: function(obj, type) {
-            let html, newHtml;
+            let html, value;
+            
+            value = formatNumber(obj.value, type);
+
             // Create html string with placeholder text - choose between inc and exp
             if (type === "inc") {
                 element = DOMstrings.incomeContainer;
 
-                html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = `<div class="item clearfix" id="income-${obj.id}"><div class="item__description">${obj.description}</div><div class="right clearfix"><div class="item__value">+ ${value}</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>`;
+
             } else if (type === "exp") {
                 element = DOMstrings.expensesContainer;
 
-                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
-            }
-            // Replace placeholder text with actual data
-            newHtml = html.replace("%id%", obj.id);
-            newHtml = newHtml.replace("%description%", obj.description);
-            newHtml = newHtml.replace("%value%", formatNumber(obj.value, type));
+                html = `<div class="item clearfix" id="expense-${obj.id}"><div class="item__description">${obj.description}</div><div class="right clearfix"><div class="item__value">- ${value}</div><div class="item__percentage"> 12%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>`;
+            }        
             // Insert HTML into DOM - beforeend so we have it as last element in list
-            document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
+            document.querySelector(element).insertAdjacentHTML("beforeend", html);
         },
 
         deleteListItem: function(selectorID) {
@@ -289,22 +297,16 @@ let UIController = (function() {
             //chooses the right list
             type === "inc" ? typeContainer = DOMstrings.incomeContainer : typeContainer = DOMstrings.expensesContainer;
             //removes children until none
-            ele = document.querySelector(typeContainer)
+            ele = document.querySelector(typeContainer);
             while (ele.firstChild) {
                ele.removeChild(ele.firstChild);
             }
         },
 
+        // Clears our input fields
         clearFields: function() {
-            let fields, fieldsArr;
-            //querySelectorAll returns list of findings
-            fields = document.querySelectorAll(DOMstrings.inputDesc + ", " + DOMstrings.inputValue);
-            //using the slice() from array to covert the list we got from above
-            fieldsArr = Array.prototype.slice.call(fields);
-            //sets value to zero for every ele
-            fieldsArr.forEach(function(current, index, array) {
-                current.value = "";
-            });
+            document.querySelector(DOMstrings.inputDesc).value = "";
+            document.querySelector(DOMstrings.inputValue).value = "";
             //Sets focus back on description field
             fieldsArr[0].focus();
         },
