@@ -308,7 +308,7 @@ let UIController = (function() {
             document.querySelector(DOMstrings.inputDesc).value = "";
             document.querySelector(DOMstrings.inputValue).value = "";
             //Sets focus back on description field
-            fieldsArr[0].focus();
+            document.querySelector(DOMstrings.inputDesc).focus();
         },
         // to display the calculated budget items. gets obj with 4 properties
         displaybudget: function(obj) {
