@@ -186,6 +186,14 @@ let budgetController = (function() {
 
 
 
+
+
+
+
+
+
+
+
 // UI CONTROLLER
 
 let UIController = (function() {
@@ -313,7 +321,8 @@ let UIController = (function() {
         // to display the calculated budget items. gets obj with 4 properties
         displaybudget: function(obj) {
             let type;
-            obj.budget > 0 ? type = "inc" : type = "exp";   //determine if budget is positive
+            //determine if budget is positive for format number
+            obj.budget > 0 ? type = "inc" : type = "exp";   
 
             document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
             document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, "inc");
@@ -370,6 +379,12 @@ let UIController = (function() {
         }
     };
 })();
+
+
+
+
+
+
 
 
 
