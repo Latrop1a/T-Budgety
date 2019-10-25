@@ -19,32 +19,36 @@ Feature Ideas:
 // BUDGET CONTROLLER
 let budgetController = (function() {
     // Expense Constructor
-    let Expense = function(id, description, value) {
-        this.id = id;
-        this.description = description;
-        this.value = value;
-        this.percentage = -1;   //not yet defined
-    };
- 
-    // Method: Calculate percentage from total
-    Expense.prototype.calcPercentage = function(totalIncome) {
-        if (totalIncome > 0) {
-            this.percentage = Math.round((this.value / totalIncome) * 100);
-        } else {
-            this.percentage = -1;
+    class Expense {
+        constructor(id, description, value) {
+            this.id = id;
+            this.description = description;
+            this.value = value;
+            this.percentage = -1; //not yet defined
         }
-    };
+        // Method: Calculate percentage from total
+        calcPercentage(totalIncome) {
+            if (totalIncome > 0) {
+                this.percentage = Math.round((this.value / totalIncome) * 100);
+            }
+            else {
+                this.percentage = -1;
+            }
+        }
+        getPercentage() {
+            return this.percentage;
+        }
+    }
+ 
 
-    Expense.prototype.getPercentage = function () {
-        return this.percentage;
-    };
     // Income Contructor
-    let Income = function(id, description, value) {
-        this.id = id;
-        this.description = description;
-        this.value = value;
-        
-    };
+    class Income {
+        constructor(id, description, value) {
+            this.id = id;
+            this.description = description;
+            this.value = value;
+        }
+    }
 
     let data = {
         allItems: {
@@ -60,7 +64,7 @@ let budgetController = (function() {
     };
 
     //calculates total for either inc or exp
-    const calculateTotal = function(type) {
+    const calculateTotal = type => {
         let sum = 0;
         data.allItems[type].forEach(element => {
             sum += element.value;
@@ -69,7 +73,7 @@ let budgetController = (function() {
     };
 
     // gets new ID for addItem()
-    const getNewID = (type) => {
+    const getNewID = type => {
         //select right array according to type
         let array = data.allItems[type];
         //check if any items before
@@ -111,12 +115,15 @@ let budgetController = (function() {
         },
 
         //edits the data of an item
-        editItem: function(type, id) {
-            let index;
+        editItem: function(type, id, value) {
+            let index, item;
             //returns the index of the id we are looking for
             index = getIndex(type, id);
 
-
+            if (index !== -1) {
+                item = data.allItems[type][index];
+                item.value = value;
+            }
             
 
         },
