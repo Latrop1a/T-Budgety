@@ -1,0 +1,30 @@
+{
+  "name": "budgety",
+  "version": "1.0.0",
+  "description": "budget webapp",
+  "main": "app.js",
+  "scripts": {
+    "clean": "rm dist/bundle.js",
+    "build-dev": "webpack -d --mode development",
+    "build-prod": "webpack -p --mode production",
+    "start": "webpack-dev-server --mode development --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Latrop1a/Tutorial-Budgety.git"
+  },
+  "author": "act",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Latrop1a/Tutorial-Budgety/issues"
+  },
+  "homepage": "https://github.com/Latrop1a/Tutorial-Budgety#readme",
+  "devDependencies": {
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  }
+}
