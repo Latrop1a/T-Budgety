@@ -18,9 +18,7 @@ Feature Ideas:
 
 import Model from "./model";
 import View from "./view";
-import { DOMstrings } from "./base";
-
-const DOM = DOMstrings;
+import { DOMstrings as DOM } from "./base";
 
 // APP CONTROLLER
 //

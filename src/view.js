@@ -88,11 +88,15 @@ export default {
     type === "inc"
       ? (typeContainer = DOMstrings.incomeContainer)
       : (typeContainer = DOMstrings.expensesContainer);
-    //removes children until none
-    ele = document.querySelector(typeContainer);
+
+    // sets inner html of container to ""
+    document.querySelector(typeContainer).innerHTML = "";
+
+    //OLD --removes children until none
+    /* ele = document.querySelector(typeContainer);
     while (ele.firstChild) {
-      ele.removeChild(ele.firstChild);
-    }
+      ele.removeChild(ele.firstChild); 
+    },*/
   },
 
   // Clears our input fields
