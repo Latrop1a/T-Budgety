@@ -29,7 +29,7 @@ const formatNumber = function(num, type) {
 
   type === "inc" ? (sign = "+") : (sign = "-");
 
-  return sign + " " + newInt + "." + dec;
+  return `${sign} ${newInt}.${dec}`;
 };
 
 // Custom function to use forEach on nodeList
@@ -39,7 +39,7 @@ const nodeListForEach = function(list, callback) {
   }
 };
 
-export default view = {
+export default {
   // returns an object with the UI inputs
   getInput: function() {
     return {
@@ -59,7 +59,7 @@ export default view = {
   },
 
   addListItem: function(obj, type) {
-    let html, value;
+    let html, value, element;
 
     value = formatNumber(obj.value, type);
 
@@ -182,6 +182,5 @@ export default view = {
     });
 
     document.querySelector(DOMstrings.inputBtn).classList.toggle("red");
-  },
-
+  }
 };

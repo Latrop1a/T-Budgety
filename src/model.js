@@ -79,8 +79,7 @@ const getIndex = function(type, id) {
 
 
 //add an item with the info coming from getter method out of UI
-
-export default model = {
+export default {
 
   addItem: function(type, des, val) {
     let newItem, id;
